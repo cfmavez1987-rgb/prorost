@@ -1,0 +1,13 @@
+{
+  "name": "prorost",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "backend:dev": "cd backend && npm run dev",
+    "backend:build": "cd backend && npm run build",
+    "backend:start": "cd backend && npm start",
+    "backend:db:init": "cd backend && npm run db:init",
+    "mobile:start": "cd mobile && npx expo start",
+    "mobile:web": "cd mobile && npx expo start --web"
+  }
+}

@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ПроРосТ — AI для ваших соцсетей</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Unbounded:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ── Tokens ── */
+:root {
+  --ink: #1A1A2E;
+  --paper: #FAF8F5;
+  --coral: #E8735A;
+  --coral-hover: #D4603F;
+  --mint: #5ABFAD;
+  --slate: #6B7280;
+  --ghost: #E8E5E1;
+  --ghost-light: #F2F0ED;
+  --white: #FFFFFF;
+
+  --font-display: 'Unbounded', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-data: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+
+  --max-w: 1200px;
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+  --section-gap: clamp(5rem, 10vw, 8rem);
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img, svg { display: block; max-width: 100%; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; cursor: pointer; border: none; background: none; }
+ul { list-style: none; }
+
+/* ── Utilities ── */
+.container { max-width: var(--max-w); margin: 0 auto; padding: 0 var(--gutter); }
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* ── Typography ── */
+h1, h2, h3 { font-family: var(--font-display); font-weight: 700; line-height: 1.15; }
+h1 { font-size: clamp(2.2rem, 5.5vw, 4rem); letter-spacing: -0.02em; }
+h2 { font-size: clamp(1.6rem, 3.5vw, 2.6rem); letter-spacing: -0.01em; }
+h3 { font-size: clamp(1.1rem, 1.8vw, 1.35rem); font-weight: 500; }
+.label {
+  font-family: var(--font-data);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--coral);
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.9rem 2rem;
+  border-radius: 6px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.btn:focus-visible {
+  outline: 3px solid var(--coral);
+  outline-offset: 3px;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary {
+  background: var(--coral);
+  color: var(--white);
+}
+.btn-primary:hover { background: var(--coral-hover); box-shadow: 0 4px 20px rgba(232,115,90,0.3); }
+.btn-secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--ghost);
+}
+.btn-secondary:hover { border-color: var(--ink); }
+
+/* ── Header ── */
+.site-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 1rem 0;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+.site-header.scrolled {
+  background: rgba(250,248,245,0.92);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 1px 0 var(--ghost);
+}
+.site-header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.logo {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.logo-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+.logo span { color: var(--coral); }
+.nav-links { display: flex; gap: 2rem; align-items: center; }
+.nav-links a {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--slate);
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--ink); }
+.nav-links a:focus-visible {
+  outline: 2px solid var(--coral);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+.nav-cta { display: flex; gap: 0.75rem; align-items: center; }
+.nav-cta .btn { padding: 0.6rem 1.4rem; font-size: 0.85rem; }
+
+/* Mobile nav */
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  padding: 4px;
+}
+.nav-toggle span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--ink);
+  border-radius: 2px;
+  transition: transform 0.2s, opacity 0.2s;
+}
+.nav-toggle[aria-expanded="true"] span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.nav-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.nav-toggle[aria-expanded="true"] span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+@media (max-width: 768px) {
+  .nav-toggle { display: flex; }
+  .nav-links, .nav-cta { display: none; }
+  .site-header .container[aria-expanded="true"] .nav-links,
+  .site-header .container[aria-expanded="true"] .nav-cta {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0; right: 0;
+    background: var(--paper);
+    padding: 1.5rem var(--gutter);
+    border-bottom: 1px solid var(--ghost);
+    gap: 1rem;
+  }
+  .site-header .container[aria-expanded="true"] .nav-cta {
+    border-bottom: none;
+    padding-top: 0;
+  }
+}
+
+/* ── Hero ── */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  padding-top: 6rem;
+  overflow: hidden;
+}
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 640px;
+}
+.hero .label { margin-bottom: 1.25rem; }
+.hero h1 { margin-bottom: 1.5rem; }
+.hero h1 em {
+  font-style: normal;
+  color: var(--coral);
+}
+.hero-desc {
+  font-size: 1.15rem;
+  color: var(--slate);
+  margin-bottom: 2.5rem;
+  max-width: 520px;
+}
+.hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
+.hero-note {
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--slate);
+}
+.hero-note svg {
+  display: inline;
+  vertical-align: -2px;
+  margin-right: 4px;
+}
+
+/* Constellation canvas */
+#constellation {
+  position: absolute;
+  top: 0; right: 0;
+  width: 55%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+@media (max-width: 900px) {
+  #constellation { width: 100%; opacity: 0.25; }
+}
+
+/* ── Social Proof ── */
+.social-proof {
+  padding: 3rem 0;
+  border-top: 1px solid var(--ghost);
+  border-bottom: 1px solid var(--ghost);
+}
+.social-proof-inner {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  flex-wrap: wrap;
+}
+.social-proof-text {
+  font-size: 0.9rem;
+  color: var(--slate);
+  min-width: 180px;
+}
+.proof-logos {
+  display: flex;
+  gap: 2.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.proof-logo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--ghost);
+  letter-spacing: 0.02em;
+  transition: color 0.3s;
+  white-space: nowrap;
+}
+.proof-logo:hover { color: var(--slate); }
+
+/* ── Features ── */
+.features { padding: var(--section-gap) 0; }
+.features .label { margin-bottom: 0.75rem; }
+.features > .container > h2 { margin-bottom: 3.5rem; max-width: 600px; }
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0;
+}
+.feature-item {
+  padding: 2.5rem 2rem;
+  border-top: 1px solid var(--ghost);
+  transition: background 0.3s;
+}
+.feature-item:hover { background: var(--ghost-light); }
+.feature-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  font-size: 1.5rem;
+}
+.feature-icon.coral { background: rgba(232,115,90,0.1); color: var(--coral); }
+.feature-icon.mint { background: rgba(90,191,173,0.1); color: var(--mint); }
+.feature-item h3 { margin-bottom: 0.75rem; }
+.feature-item p { color: var(--slate); font-size: 0.95rem; }
+
+/* ── How It Works ── */
+.how-it-works {
+  padding: var(--section-gap) 0;
+  background: var(--ink);
+  color: var(--white);
+}
+.how-it-works .label { color: var(--mint); }
+.how-it-works h2 { margin-bottom: 3.5rem; }
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2.5rem;
+  counter-reset: step;
+}
+.step { counter-increment: step; position: relative; }
+.step-number {
+  font-family: var(--font-data);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--coral);
+  margin-bottom: 1rem;
+  letter-spacing: 0.05em;
+}
+.step-number::before { content: counter(step, decimal-leading-zero) " "; }
+.step h3 { color: var(--white); margin-bottom: 0.75rem; }
+.step p { color: rgba(255,255,255,0.6); font-size: 0.95rem; }
+
+/* ── Results ── */
+.results { padding: var(--section-gap) 0; }
+.results .label { margin-bottom: 0.75rem; }
+.results > .container > h2 { margin-bottom: 3.5rem; }
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+}
+.metric {
+  padding: 2rem;
+  border: 1px solid var(--ghost);
+  border-radius: 4px;
+  text-align: center;
+}
+.metric-value {
+  font-family: var(--font-data);
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+.metric-value .accent { color: var(--coral); }
+.metric-label {
+  font-size: 0.9rem;
+  color: var(--slate);
+  line-height: 1.4;
+}
+
+/* ── Testimonial ── */
+.testimonial {
+  padding: var(--section-gap) 0;
+  border-top: 1px solid var(--ghost);
+}
+.testimonial-block {
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: center;
+}
+.testimonial-quote {
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+  line-height: 1.5;
+  margin-bottom: 2rem;
+  position: relative;
+}
+.testimonial-quote::before {
+  content: '«';
+  position: absolute;
+  top: -0.4em;
+  left: -0.05em;
+  font-size: 4em;
+  color: var(--ghost);
+  font-family: var(--font-display);
+  font-weight: 900;
+  line-height: 1;
+  z-index: -1;
+}
+.testimonial-author {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+.testimonial-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--coral), var(--mint));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--white);
+}
+.testimonial-info { text-align: left; }
+.testimonial-name { font-weight: 600; font-size: 0.95rem; }
+.testimonial-role { font-size: 0.85rem; color: var(--slate); }
+
+/* ── Final CTA ── */
+.final-cta {
+  padding: var(--section-gap) 0;
+  background: var(--ink);
+  color: var(--white);
+  text-align: center;
+}
+.final-cta h2 { margin-bottom: 1rem; }
+.final-cta p {
+  color: rgba(255,255,255,0.6);
+  font-size: 1.1rem;
+  margin-bottom: 2.5rem;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.final-cta .btn-primary {
+  padding: 1rem 2.5rem;
+  font-size: 1.05rem;
+}
+.store-badges {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+.store-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 1.4rem;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.8);
+  transition: border-color 0.2s, background 0.2s;
+}
+.store-badge:hover {
+  border-color: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.05);
+}
+.store-badge:focus-visible {
+  outline: 2px solid var(--coral);
+  outline-offset: 3px;
+}
+.store-badge svg { flex-shrink: 0; }
+.store-badge-text { text-align: left; }
+.store-badge-text small { display: block; font-size: 0.65rem; opacity: 0.6; }
+.store-badge-text strong { font-size: 0.95rem; }
+
+/* ── Footer ── */
+.site-footer {
+  padding: 3rem 0;
+  border-top: 1px solid var(--ghost);
+}
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+.footer-copy { font-size: 0.85rem; color: var(--slate); }
+.footer-links { display: flex; gap: 1.5rem; }
+.footer-links a {
+  font-size: 0.85rem;
+  color: var(--slate);
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--ink); }
+.footer-links a:focus-visible {
+  outline: 2px solid var(--coral);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ── Scroll reveal ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  html { scroll-behavior: auto; }
+}
+
+/* ── Responsive tweaks ── */
+@media (max-width: 600px) {
+  .hero { min-height: auto; padding-top: 7rem; padding-bottom: 4rem; }
+  .hero-actions { flex-direction: column; }
+  .hero-actions .btn { width: 100%; justify-content: center; }
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  .steps { grid-template-columns: 1fr; }
+  .store-badges { flex-direction: column; align-items: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="site-header" role="banner">
+  <div class="container" id="nav-container">
+    <a href="#" class="logo" aria-label="ПроРосТ, на главную"><svg class="logo-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect x="4" y="28" width="8" height="16" rx="2.5" fill="#E8735A" opacity="0.5"/><rect x="16" y="18" width="8" height="26" rx="2.5" fill="#E8735A" opacity="0.75"/><rect x="28" y="6" width="8" height="38" rx="2.5" fill="#E8735A"/><circle cx="32" cy="3" r="4" fill="#5ABFAD"/></svg>ПроРосТ</a>
+    <nav class="nav-links" aria-label="Основная навигация">
+      <a href="#features">Возможности</a>
+      <a href="#how">Как работает</a>
+      <a href="#results">Результаты</a>
+    </nav>
+    <div class="nav-cta">
+      <a href="#download" class="btn btn-primary">Скачать</a>
+    </div>
+    <button class="nav-toggle" aria-label="Меню" aria-expanded="false" aria-controls="nav-container">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- ── Hero ── -->
+<section class="hero" id="hero">
+  <canvas id="constellation" aria-hidden="true"></canvas>
+  <div class="container">
+    <div class="hero-content">
+      <p class="label">Мобильное приложение с AI</p>
+      <h1>Ваши соцсети<br>ведутся <em>сами</em></h1>
+      <p class="hero-desc">Генерация постов нейросетью, автопубликация по расписанию и понятная аналитика — всё в одном приложении. Больше никакого рутины.</p>
+      <div class="hero-actions">
+        <a href="#download" class="btn btn-primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Скачать бесплатно
+        </a>
+        <a href="#features" class="btn btn-secondary">Узнать больше</a>
+      </div>
+      <p class="hero-note">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Бесплатно до 50 постов в месяц
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Social Proof ── -->
+<section class="social-proof reveal" aria-label="Нам доверяют">
+  <div class="container">
+    <div class="social-proof-inner">
+      <p class="social-proof-text">Уже используют:</p>
+      <div class="proof-logos">
+        <span class="proof-logo">Кафе «Уют»</span>
+        <span class="proof-logo">Фотостудия Light</span>
+        <span class="proof-logo">Фитнес-клуб Олимп</span>
+        <span class="proof-logo">Школа языков SpeakUp</span>
+        <span class="proof-logo">Магазин «Цветной»</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Features ── -->
+<section class="features" id="features">
+  <div class="container">
+    <p class="label reveal">Возможности</p>
+    <h2 class="reveal">Всё для соцсетей<br>в одном экране</h2>
+    <div class="features-grid">
+      <div class="feature-item reveal">
+        <div class="feature-icon coral" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <h3>AI-генерация текста</h3>
+        <p>Опишите тему и тон — нейросеть напишет пост за секунды. Редактируйте, сохраняйте как черновик.</p>
+      </div>
+      <div class="feature-item reveal">
+        <div class="feature-icon mint" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <h3>Автопубликация</h3>
+        <p>Запланируйте пост на нужную дату и время. Приложение опубликует его само — без вашего участия.</p>
+      </div>
+      <div class="feature-item reveal">
+        <div class="feature-icon coral" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <h3>Аналитика</h3>
+        <p>Охваты, вовлечённость, динамика подписчиков — всё на понятных графиках и карточках.</p>
+      </div>
+      <div class="feature-item reveal">
+        <div class="feature-icon mint" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <h3>Несколько площадок</h3>
+        <p>Подключите VK, Telegram и Instagram. Управляйте всеми аккаунтами из одного места.</p>
+      </div>
+      <div class="feature-item reveal">
+        <div class="feature-icon coral" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>Безопасное подключение</h3>
+        <p>OAuth-авторизация — пароли от соцсетей не передаются. Токены хранятся только на вашем устройстве.</p>
+      </div>
+      <div class="feature-item reveal">
+        <div class="feature-icon mint" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h3>Черновики</h3>
+        <p>Начните пост, сохраните, вернитесь позже. Все черновики всегда под рукой.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── How It Works ── -->
+<section class="how-it-works" id="how">
+  <div class="container">
+    <p class="label reveal">Как это работает</p>
+    <h2 class="reveal">От идеи до публикации<br>за четыре шага</h2>
+    <div class="steps">
+      <div class="step reveal">
+        <p class="step-number">Шаг</p>
+        <h3>Подключите аккаунт</h3>
+        <p>Войдите через VK, Telegram или Instagram. Пароли не нужны — только OAuth.</p>
+      </div>
+      <div class="step reveal">
+        <p class="step-number">Шаг</p>
+        <h3>Задайте тему</h3>
+        <p>Напишите, о чём пост, и выберите тон: дружелюбный, экспертный, продающий.</p>
+      </div>
+      <div class="step reveal">
+        <p class="step-number">Шаг</p>
+        <h3>Получите текст</h3>
+        <p>AI сгенерирует пост за секунды. Отредактируйте, если нужно, и сохраните.</p>
+      </div>
+      <div class="step reveal">
+        <p class="step-number">Шаг</p>
+        <h3>Запланируйте</h3>
+        <p>Выберите дату и время. Приложение опубликует пост автоматически.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Results ── -->
+<section class="results" id="results">
+  <div class="container">
+    <p class="label reveal">Результаты</p>
+    <h2 class="reveal">Цифры, которые говорят<br>сами за себя</h2>
+    <div class="metrics-grid">
+      <div class="metric reveal">
+        <p class="metric-value">3<span class="accent">×</span></p>
+        <p class="metric-label">Больше постов<br>в месяц</p>
+      </div>
+      <div class="metric reveal">
+        <p class="metric-value">70<span class="accent">%</span></p>
+        <p class="metric-label">Экономия времени<br>на создание контента</p>
+      </div>
+      <div class="metric reveal">
+        <p class="metric-value">+45<span class="accent">%</span></p>
+        <p class="metric-label">Рост вовлечённости<br>за первый месяц</p>
+      </div>
+      <div class="metric reveal">
+        <p class="metric-value">2<span class="accent"> мин</span></p>
+        <p class="metric-label">Среднее время<br>создания поста</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Testimonial ── -->
+<section class="testimonial reveal">
+  <div class="container">
+    <div class="testimonial-block">
+      <blockquote class="testimonial-quote">
+        Раньше я тратила 3–4 часа в день на посты для кафе. Теперь открываю приложение утром, генерирую три поста за кофе, планирую — и весь день свободна. Охваты выросли, потому что я наконец-то публикую регулярно.
+      </blockquote>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar" aria-hidden="true">АК</div>
+        <div class="testimonial-info">
+          <p class="testimonial-name">Анна Кузнецова</p>
+          <p class="testimonial-role">Владелица кафе «Уют», Москва</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Final CTA ── -->
+<section class="final-cta" id="download">
+  <div class="container">
+    <h2 class="reveal">Попробуйте бесплатно</h2>
+    <p class="reveal">До 50 постов в месяц — без карты и подписки. Просто скачайте и начните.</p>
+    <div class="reveal">
+      <div class="store-badges">
+        <a href="#" class="store-badge" aria-label="Скачать в App Store">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+          <span class="store-badge-text"><small>Загрузите в</small><strong>App Store</strong></span>
+        </a>
+        <a href="#" class="store-badge" aria-label="Скачать в Google Play">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.199l2.302 2.302a1 1 0 0 1 0 1.38l-2.302 2.302L15.396 12l2.302-2.492zM5.864 2.658L16.8 9.991l-2.302 2.302-8.634-8.635z"/></svg>
+          <span class="store-badge-text"><small>Доступно в</small><strong>Google Play</strong></span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-inner">
+      <p class="footer-copy">&copy; 2025 ПроРосТ. Все права защищены.</p>
+      <nav class="footer-links" aria-label="Футер">
+        <a href="#">Политика конфиденциальности</a>
+        <a href="#">Пользовательское соглашение</a>
+        <a href="#">Поддержка</a>
+      </nav>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ── Header scroll ── */
+const header = document.querySelector('.site-header');
+let lastScroll = 0;
+window.addEventListener('scroll', () => {
+  header.classList.toggle('scrolled', window.scrollY > 40);
+}, { passive: true });
+
+/* ── Mobile nav toggle ── */
+const navToggle = document.querySelector('.nav-toggle');
+const navContainer = document.getElementById('nav-container');
+navToggle.addEventListener('click', () => {
+  const expanded = navToggle.getAttribute('aria-expanded') === 'true';
+  navToggle.setAttribute('aria-expanded', !expanded);
+  navContainer.setAttribute('aria-expanded', !expanded);
+});
+
+/* ── Scroll reveal ── */
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (!prefersReducedMotion) {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+} else {
+  document.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
+}
+
+/* ── Constellation animation ── */
+(function() {
+  const canvas = document.getElementById('constellation');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let width, height, nodes = [], animId;
+
+  const COLORS = {
+    coral: 'rgba(232,115,90,',
+    mint: 'rgba(90,191,173,',
+    ink: 'rgba(26,26,46,'
+  };
+
+  function resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    width = rect.width;
+    height = rect.height;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function createNodes() {
+    nodes = [];
+    const count = Math.min(Math.floor(width * height / 12000), 60);
+    for (let i = 0; i < count; i++) {
+      nodes.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        r: 2 + Math.random() * 3,
+        color: Math.random() > 0.5 ? 'coral' : 'mint',
+        pulse: Math.random() * Math.PI * 2
+      });
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, width, height);
+    const time = Date.now() * 0.001;
+
+    // Lines
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const dx = nodes[i].x - nodes[j].x;
+        const dy = nodes[i].y - nodes[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 160) {
+          const alpha = (1 - dist / 160) * 0.15;
+          ctx.beginPath();
+          ctx.moveTo(nodes[i].x, nodes[i].y);
+          ctx.lineTo(nodes[j].x, nodes[j].y);
+          ctx.strokeStyle = COLORS.ink + alpha + ')';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Nodes
+    for (const node of nodes) {
+      node.x += node.vx;
+      node.y += node.vy;
+      if (node.x < 0 || node.x > width) node.vx *= -1;
+      if (node.y < 0 || node.y > height) node.vy *= -1;
+
+      const pulse = 0.6 + 0.4 * Math.sin(time * 1.5 + node.pulse);
+      const alpha = 0.4 + 0.4 * pulse;
+
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, node.r * pulse, 0, Math.PI * 2);
+      ctx.fillStyle = COLORS[node.color] + alpha + ')';
+      ctx.fill();
+
+      // Glow
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, node.r * 3 * pulse, 0, Math.PI * 2);
+      ctx.fillStyle = COLORS[node.color] + (alpha * 0.15) + ')';
+      ctx.fill();
+    }
+
+    animId = requestAnimationFrame(draw);
+  }
+
+  function init() {
+    resize();
+    createNodes();
+    if (animId) cancelAnimationFrame(animId);
+    if (!prefersReducedMotion) {
+      draw();
+    } else {
+      // Static render
+      for (const node of nodes) {
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.r, 0, Math.PI * 2);
+        ctx.fillStyle = COLORS[node.color] + '0.5)';
+        ctx.fill();
+      }
+    }
+  }
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(init, 200);
+  });
+
+  init();
+})();
+</script>
+
+</body>
+</html>

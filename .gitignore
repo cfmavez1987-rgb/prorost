@@ -1,0 +1,8 @@
+node_modules/
+.env
+dist/
+.expo/
+*.hbc
+metadata.json
+/tmp/
+.DS_Store

@@ -11,7 +11,7 @@ import {
 import { api, SocialAccount, ApiError } from '../../api/client';
 import { Button } from '../../components/Button';
 import { LoadingScreen, EmptyState, ErrorState } from '../../components/States';
-import { colors, fontSize, radius, spacing } from '../../theme';
+import { useTheme, fontSize, radius, spacing } from '../../theme';
 
 const PROVIDERS = [
   { id: 'vk', name: 'ВКонтакте', color: '#4C75A3', icon: 'VK' },
@@ -20,6 +20,7 @@ const PROVIDERS = [
 ] as const;
 
 export function SocialAccountsScreen() {
+  const { colors } = useTheme();
   const [accounts, setAccounts] = useState<SocialAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState<string | null>(null);
@@ -83,6 +84,8 @@ export function SocialAccountsScreen() {
 
   if (loading) return <LoadingScreen />;
   if (error) return <ErrorState message={error} onRetry={fetchAccounts} />;
+
+  const styles = makeStyles(colors);
 
   const connectedProviders = new Set(accounts.map(a => a.provider));
   const availableProviders = PROVIDERS.filter(p => !connectedProviders.has(p.id as any));
@@ -153,7 +156,7 @@ export function SocialAccountsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.paper,
@@ -179,9 +182,9 @@ const styles = StyleSheet.create({
   accountCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.white,
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: colors.ghost,
+    borderColor: colors.cardBorder,
     borderRadius: radius.sm,
     padding: spacing.md,
     marginBottom: spacing.sm,
@@ -189,9 +192,9 @@ const styles = StyleSheet.create({
   connectCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.white,
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: colors.ghost,
+    borderColor: colors.cardBorder,
     borderRadius: radius.sm,
     padding: spacing.md,
     marginBottom: spacing.sm,

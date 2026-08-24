@@ -6,8 +6,8 @@ import { FeedScreen } from '../screens/main/FeedScreen';
 import { CreatePostScreen } from '../screens/main/CreatePostScreen';
 import { AnalyticsScreen } from '../screens/main/AnalyticsScreen';
 import { SocialAccountsScreen } from '../screens/main/SocialAccountsScreen';
-import { useAuth } from '../context/AuthContext';
-import { colors, fontSize } from '../theme';
+import { SettingsScreen } from '../screens/main/SettingsScreen';
+import { useTheme, fontSize } from '../theme';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -17,6 +17,7 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
     Feed: '📝',
     Analytics: '📊',
     Social: '🔗',
+    Settings: '⚙️',
   };
   return (
     <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.5 }}>
@@ -26,6 +27,7 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
 }
 
 function FeedStack() {
+  const { colors } = useTheme();
   return (
     <Stack.Navigator
       screenOptions={{
@@ -41,7 +43,7 @@ function FeedStack() {
 }
 
 export function MainNavigator() {
-  const { logout } = useAuth();
+  const { colors } = useTheme();
 
   return (
     <Tab.Navigator
@@ -49,14 +51,6 @@ export function MainNavigator() {
         headerShown: true,
         headerStyle: { backgroundColor: colors.paper, elevation: 0, shadowOpacity: 0 },
         headerTitleStyle: { color: colors.ink, fontWeight: '600' },
-        headerRight: () => (
-          <Text
-            onPress={logout}
-            style={{ color: colors.coral, fontSize: fontSize.sm, marginRight: 16, fontWeight: '500' }}
-          >
-            Выйти
-          </Text>
-        ),
         tabBarIcon: ({ focused }) => <TabIcon name={route.name} focused={focused} />,
         tabBarActiveTintColor: colors.coral,
         tabBarInactiveTintColor: colors.slate,
@@ -86,6 +80,11 @@ export function MainNavigator() {
         name="Social"
         component={SocialAccountsScreen}
         options={{ title: 'Соцсети' }}
+      />
+      <Tab.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{ title: 'Настройки' }}
       />
     </Tab.Navigator>
   );

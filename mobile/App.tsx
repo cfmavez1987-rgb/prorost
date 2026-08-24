@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { ThemeProvider, useTheme } from './src/theme';
 import { AuthNavigator } from './src/navigation/AuthNavigator';
 import { MainNavigator } from './src/navigation/MainNavigator';
 import { LoadingScreen } from './src/components/States';
@@ -9,6 +10,7 @@ import { StatusBar } from 'expo-status-bar';
 
 function RootNavigator() {
   const { isAuthenticated, isLoading } = useAuth();
+  const { isDark } = useTheme();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -21,6 +23,7 @@ function RootNavigator() {
 
   return (
     <NavigationContainer>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       {isAuthenticated ? <MainNavigator /> : <AuthNavigator />}
     </NavigationContainer>
   );
@@ -28,9 +31,10 @@ function RootNavigator() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <StatusBar style="dark" />
-      <RootNavigator />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <RootNavigator />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

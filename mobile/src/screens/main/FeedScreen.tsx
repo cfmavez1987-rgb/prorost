@@ -11,10 +11,11 @@ import { api, Post, ApiError, AuthError } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import { PostCard } from '../../components/PostCard';
 import { EmptyState, LoadingScreen, ErrorState } from '../../components/States';
-import { colors, fontSize, spacing } from '../../theme';
+import { useTheme, fontSize, spacing } from '../../theme';
 
 export function FeedScreen({ navigation }: any) {
   const { logout } = useAuth();
+  const { colors } = useTheme();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -67,6 +68,8 @@ export function FeedScreen({ navigation }: any) {
   if (loading && posts.length === 0) return <LoadingScreen />;
   if (error && posts.length === 0) return <ErrorState message={error} onRetry={() => fetchPosts(1, true)} />;
 
+  const styles = makeStyles(colors);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -116,7 +119,7 @@ export function FeedScreen({ navigation }: any) {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.paper,

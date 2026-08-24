@@ -10,11 +10,12 @@ import {
 import { api, AnalyticsOverview, ReachDynamics, ApiError } from '../../api/client';
 import { MetricCard } from '../../components/MetricCard';
 import { LoadingScreen, ErrorState } from '../../components/States';
-import { colors, fontSize, spacing } from '../../theme';
+import { useTheme, fontSize, spacing } from '../../theme';
 
 const CHART_WIDTH = Dimensions.get('window').width - spacing.lg * 2;
 
 export function AnalyticsScreen() {
+  const { colors } = useTheme();
   const [overview, setOverview] = useState<AnalyticsOverview | null>(null);
   const [dynamics, setDynamics] = useState<ReachDynamics | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,6 +45,8 @@ export function AnalyticsScreen() {
   if (loading) return <LoadingScreen />;
   if (error) return <ErrorState message={error} onRetry={fetchData} />;
   if (!overview) return null;
+
+  const styles = makeStyles(colors);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scroll}>
@@ -137,7 +140,7 @@ export function AnalyticsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.paper,
@@ -159,9 +162,9 @@ const styles = StyleSheet.create({
   },
   chartSection: {
     marginTop: spacing.lg,
-    backgroundColor: colors.white,
+    backgroundColor: colors.card,
     borderWidth: 1,
-    borderColor: colors.ghost,
+    borderColor: colors.cardBorder,
     borderRadius: 6,
     padding: spacing.md,
   },

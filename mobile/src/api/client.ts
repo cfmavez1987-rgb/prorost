@@ -8,7 +8,7 @@ import {
   mockGenerate,
 } from './mockData';
 
-const BASE_URL = 'http://localhost:3000/v1';
+const BASE_URL = 'https://api-production-ab02c.up.railway.app/v1';
 const TOKEN_KEY = 'auth_token';
 const REFRESH_KEY = 'refresh_token';
 

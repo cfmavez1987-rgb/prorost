@@ -7,7 +7,8 @@ import {
   TextInput,
   Alert,
   KeyboardAvoidingView,
-  Platform,
+  Platform as RNPlatform,
+  TouchableOpacity,
 } from 'react-native';
 import { api, Post, ApiError } from '../../api/client';
 import { Button } from '../../components/Button';
@@ -24,12 +25,19 @@ const TONES = [
   { value: 'formal', label: 'Официальный' },
 ];
 
+const PLATFORMS = [
+  { value: 'vk', label: 'ВКонтакте', icon: 'VK', color: '#4C75A3' },
+  { value: 'telegram', label: 'Telegram', icon: 'TG', color: '#26A5E4' },
+  { value: 'instagram', label: 'Instagram', icon: 'IG', color: '#E4405F' },
+];
+
 export function CreatePostScreen({ navigation, route }: any) {
   const postId = route?.params?.postId;
   const isEditing = !!postId;
 
   const [topic, setTopic] = useState('');
   const [tone, setTone] = useState('friendly');
+  const [platform, setPlatform] = useState('vk');
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -93,9 +101,9 @@ export function CreatePostScreen({ navigation, route }: any) {
     setLoading(true);
     try {
       if (isEditing) {
-        await api.updatePost(postId, { text, topic, tone });
+        await api.updatePost(postId, { text, topic, tone, platform });
       } else {
-        await api.createPost({ text, topic, tone });
+        await api.createPost({ text, topic, tone, platform });
       }
       Alert.alert('Готово', isEditing ? 'Пост обновлён' : 'Черновик сохранён');
       navigation.goBack();
@@ -113,10 +121,10 @@ export function CreatePostScreen({ navigation, route }: any) {
     try {
       let targetId = postId;
       if (!isEditing) {
-        const post = await api.createPost({ text, topic, tone });
+        const post = await api.createPost({ text, topic, tone, platform });
         targetId = post.id;
       } else {
-        await api.updatePost(postId, { text, topic, tone });
+        await api.updatePost(postId, { text, topic, tone, platform });
       }
       await api.schedulePost(targetId, scheduledDate.toISOString());
       const dateStr = scheduledDate.toLocaleDateString('ru-RU', {
@@ -127,7 +135,8 @@ export function CreatePostScreen({ navigation, route }: any) {
         hour: '2-digit',
         minute: '2-digit',
       });
-      Alert.alert('Запланировано', `Пост будет опубликован ${dateStr} в ${timeStr}`);
+      const platformLabel = PLATFORMS.find(p => p.value === platform)?.label || platform;
+      Alert.alert('Запланировано', `Пост будет опубликован ${dateStr} в ${timeStr} в ${platformLabel}`);
       navigation.goBack();
     } catch (err) {
       Alert.alert('Ошибка', err instanceof ApiError ? err.message : 'Не удалось запланировать');
@@ -141,7 +150,7 @@ export function CreatePostScreen({ navigation, route }: any) {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={RNPlatform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
         contentContainerStyle={styles.scroll}
@@ -173,6 +182,33 @@ export function CreatePostScreen({ navigation, route }: any) {
               />
             ))}
           </ScrollView>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Канал публикации</Text>
+          <View style={styles.platforms}>
+            {PLATFORMS.map(p => {
+              const selected = platform === p.value;
+              return (
+                <TouchableOpacity
+                  key={p.value}
+                  style={[
+                    styles.platformBtn,
+                    selected && { backgroundColor: p.color, borderColor: p.color },
+                  ]}
+                  onPress={() => setPlatform(p.value)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.platformIcon, selected && styles.platformIconSelected]}>
+                    {p.icon}
+                  </Text>
+                  <Text style={[styles.platformLabel, selected && styles.platformLabelSelected]}>
+                    {p.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
 
         <Button
@@ -262,6 +298,37 @@ const styles = StyleSheet.create({
   },
   toneBtnText: {
     fontSize: fontSize.sm,
+  },
+  platforms: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  platformBtn: {
+    flex: 1,
+    flexDirection: 'column',
+    alignItems: 'center',
+    padding: spacing.md,
+    borderRadius: radius.sm,
+    borderWidth: 1.5,
+    borderColor: colors.ghost,
+    backgroundColor: colors.white,
+    gap: spacing.xs,
+  },
+  platformIcon: {
+    fontSize: fontSize.lg,
+    fontWeight: '700',
+    color: colors.ink,
+  },
+  platformIconSelected: {
+    color: colors.white,
+  },
+  platformLabel: {
+    fontSize: fontSize.xs,
+    color: colors.slate,
+    fontWeight: '500',
+  },
+  platformLabelSelected: {
+    color: colors.white,
   },
   generateBtn: {
     marginBottom: spacing.lg,

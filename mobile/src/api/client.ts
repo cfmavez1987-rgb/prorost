@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 import {
   MOCK_AUTH,
   MOCK_POSTS,
@@ -14,6 +15,13 @@ const REFRESH_KEY = 'refresh_token';
 
 // Переключите на true для работы без backend
 const USE_MOCK = false;
+
+// Хранилище: localStorage на web, AsyncStorage на native
+const storage = Platform.OS === 'web' ? {
+  getItem: (key: string) => Promise.resolve(localStorage.getItem(key)),
+  setItem: (key: string, value: string) => { localStorage.setItem(key, value); return Promise.resolve(); },
+  removeItem: (key: string) => { localStorage.removeItem(key); return Promise.resolve(); },
+} : AsyncStorage;
 
 // Имитация задержки сети
 const delay = (ms = 400) => new Promise(r => setTimeout(r, ms));
@@ -33,17 +41,17 @@ class ApiClient {
   }
 
   async getToken(): Promise<string | null> {
-    return AsyncStorage.getItem(TOKEN_KEY);
+    return storage.getItem(TOKEN_KEY);
   }
 
   async setTokens(access: string, refresh: string): Promise<void> {
-    await AsyncStorage.setItem(TOKEN_KEY, access);
-    await AsyncStorage.setItem(REFRESH_KEY, refresh);
+    await storage.setItem(TOKEN_KEY, access);
+    await storage.setItem(REFRESH_KEY, refresh);
   }
 
   async clearTokens(): Promise<void> {
-    await AsyncStorage.removeItem(TOKEN_KEY);
-    await AsyncStorage.removeItem(REFRESH_KEY);
+    await storage.removeItem(TOKEN_KEY);
+    await storage.removeItem(REFRESH_KEY);
   }
 
   private async request<T>(path: string, opts: RequestOptions = {}): Promise<T> {

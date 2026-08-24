@@ -17,6 +17,7 @@ import { DateTimePicker } from '../../components/DateTimePicker';
 import { PostPreview } from '../../components/PostPreview';
 import { ImageAttachment } from '../../components/ImageAttachment';
 import { LoadingScreen } from '../../components/States';
+import { notifications } from '../../services/notifications';
 import { colors, fontSize, radius, spacing } from '../../theme';
 
 const TONES = [
@@ -130,6 +131,7 @@ export function CreatePostScreen({ navigation, route }: any) {
       } else {
         await api.createPost({ text, topic, tone, platform });
       }
+      await notifications.sendLocal('Черновик сохранён', `Пост «${topic}» сохранён`);
       Alert.alert('Готово', isEditing ? 'Пост обновлён' : 'Черновик сохранён');
       navigation.goBack();
     } catch (err) {
@@ -150,6 +152,7 @@ export function CreatePostScreen({ navigation, route }: any) {
         await api.updatePost(postId, { text, topic, tone, platform });
       }
       await api.schedulePost(targetId, scheduledDate.toISOString());
+      await notifications.notifyPostScheduled(topic, scheduledDate);
       const dateStr = scheduledDate.toLocaleDateString('ru-RU', {
         day: 'numeric',
         month: 'long',

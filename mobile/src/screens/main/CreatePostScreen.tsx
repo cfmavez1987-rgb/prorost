@@ -12,6 +12,7 @@ import {
 import { api, Post, ApiError } from '../../api/client';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
+import { DateTimePicker } from '../../components/DateTimePicker';
 import { LoadingScreen } from '../../components/States';
 import { colors, fontSize, radius, spacing } from '../../theme';
 
@@ -34,6 +35,12 @@ export function CreatePostScreen({ navigation, route }: any) {
   const [generating, setGenerating] = useState(false);
   const [scheduling, setScheduling] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Дата/время планирования — по умолчанию завтра в 12:00
+  const defaultSchedule = new Date();
+  defaultSchedule.setDate(defaultSchedule.getDate() + 1);
+  defaultSchedule.setHours(12, 0, 0, 0);
+  const [scheduledDate, setScheduledDate] = useState(defaultSchedule);
 
   useEffect(() => {
     if (isEditing) {
@@ -102,12 +109,6 @@ export function CreatePostScreen({ navigation, route }: any) {
   async function handleSchedule() {
     if (!validate()) return;
 
-    // For simplicity, schedule for tomorrow at 12:00
-    // In a real app, show a date/time picker
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(12, 0, 0, 0);
-
     setScheduling(true);
     try {
       let targetId = postId;
@@ -117,11 +118,16 @@ export function CreatePostScreen({ navigation, route }: any) {
       } else {
         await api.updatePost(postId, { text, topic, tone });
       }
-      await api.schedulePost(targetId, tomorrow.toISOString());
-      Alert.alert(
-        'Запланировано',
-        `Пост будет опубликован ${tomorrow.toLocaleDateString('ru-RU')} в 12:00`
-      );
+      await api.schedulePost(targetId, scheduledDate.toISOString());
+      const dateStr = scheduledDate.toLocaleDateString('ru-RU', {
+        day: 'numeric',
+        month: 'long',
+      });
+      const timeStr = scheduledDate.toLocaleTimeString('ru-RU', {
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+      Alert.alert('Запланировано', `Пост будет опубликован ${dateStr} в ${timeStr}`);
       navigation.goBack();
     } catch (err) {
       Alert.alert('Ошибка', err instanceof ApiError ? err.message : 'Не удалось запланировать');
@@ -191,6 +197,14 @@ export function CreatePostScreen({ navigation, route }: any) {
           />
           {errors.text ? <Text style={styles.error}>{errors.text}</Text> : null}
           <Text style={styles.charCount}>{text.length} символов</Text>
+        </View>
+
+        <View style={styles.section}>
+          <DateTimePicker
+            label="Дата и время публикации"
+            value={scheduledDate}
+            onChange={setScheduledDate}
+          />
         </View>
 
         <View style={styles.actions}>

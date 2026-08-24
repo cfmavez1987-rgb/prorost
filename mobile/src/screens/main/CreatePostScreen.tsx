@@ -69,6 +69,12 @@ export function CreatePostScreen({ navigation, route }: any) {
       setTopic(post.topic);
       setTone(post.tone);
       setText(post.text);
+      setPlatform(post.platform || 'vk');
+      // Загружаем запланированную дату
+      const scheduled = post.scheduledAt || (post as any).scheduled_at;
+      if (scheduled) {
+        setScheduledDate(new Date(scheduled));
+      }
     } catch (err) {
       Alert.alert('Ошибка', 'Не удалось загрузить пост');
       navigation.goBack();

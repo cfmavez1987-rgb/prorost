@@ -18,7 +18,11 @@ const STATUS_CONFIG: Record<PostStatus, { label: string; color: string; bg: stri
 export function PostCard({ post, onPress }: PostCardProps) {
   const status = STATUS_CONFIG[post.status];
   const preview = post.text.length > 120 ? post.text.slice(0, 120) + '…' : post.text;
-  const date = post.scheduledAt || post.publishedAt || post.createdAt;
+  // Поддержка обоих форматов: camelCase и snake_case
+  const scheduledAt = post.scheduledAt || (post as any).scheduled_at;
+  const publishedAt = post.publishedAt || (post as any).published_at;
+  const createdAt = post.createdAt || (post as any).created_at;
+  const date = scheduledAt || publishedAt || createdAt;
   const formattedDate = new Date(date).toLocaleDateString('ru-RU', {
     day: 'numeric',
     month: 'short',

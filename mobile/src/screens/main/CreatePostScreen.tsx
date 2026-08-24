@@ -14,6 +14,7 @@ import { api, Post, ApiError } from '../../api/client';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { DateTimePicker } from '../../components/DateTimePicker';
+import { PostPreview } from '../../components/PostPreview';
 import { LoadingScreen } from '../../components/States';
 import { colors, fontSize, radius, spacing } from '../../theme';
 
@@ -49,6 +50,8 @@ export function CreatePostScreen({ navigation, route }: any) {
   defaultSchedule.setDate(defaultSchedule.getDate() + 1);
   defaultSchedule.setHours(12, 0, 0, 0);
   const [scheduledDate, setScheduledDate] = useState(defaultSchedule);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewAction, setPreviewAction] = useState<'save' | 'schedule'>('save');
 
   useEffect(() => {
     if (isEditing) {
@@ -96,8 +99,28 @@ export function CreatePostScreen({ navigation, route }: any) {
     }
   }
 
-  async function handleSave() {
+  function handleSavePress() {
     if (!validate()) return;
+    setPreviewAction('save');
+    setShowPreview(true);
+  }
+
+  function handleSchedulePress() {
+    if (!validate()) return;
+    setPreviewAction('schedule');
+    setShowPreview(true);
+  }
+
+  async function handleConfirm() {
+    setShowPreview(false);
+    if (previewAction === 'save') {
+      await doSave();
+    } else {
+      await doSchedule();
+    }
+  }
+
+  async function doSave() {
     setLoading(true);
     try {
       if (isEditing) {
@@ -114,9 +137,7 @@ export function CreatePostScreen({ navigation, route }: any) {
     }
   }
 
-  async function handleSchedule() {
-    if (!validate()) return;
-
+  async function doSchedule() {
     setScheduling(true);
     try {
       let targetId = postId;
@@ -246,19 +267,31 @@ export function CreatePostScreen({ navigation, route }: any) {
         <View style={styles.actions}>
           <Button
             title="Сохранить черновик"
-            onPress={handleSave}
+            onPress={handleSavePress}
             variant="secondary"
             loading={loading}
             style={styles.actionBtn}
           />
           <Button
             title="Запланировать"
-            onPress={handleSchedule}
+            onPress={handleSchedulePress}
             loading={scheduling}
             style={styles.actionBtn}
           />
         </View>
       </ScrollView>
+
+      <PostPreview
+        visible={showPreview}
+        onClose={() => setShowPreview(false)}
+        onConfirm={handleConfirm}
+        text={text}
+        platform={platform}
+        topic={topic}
+        scheduledDate={previewAction === 'schedule' ? scheduledDate : undefined}
+        confirmLabel={previewAction === 'save' ? 'Сохранить черновик' : 'Запланировать'}
+        loading={loading || scheduling}
+      />
     </KeyboardAvoidingView>
   );
 }

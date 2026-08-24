@@ -15,6 +15,7 @@ import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
 import { DateTimePicker } from '../../components/DateTimePicker';
 import { PostPreview } from '../../components/PostPreview';
+import { ImageAttachment } from '../../components/ImageAttachment';
 import { LoadingScreen } from '../../components/States';
 import { colors, fontSize, radius, spacing } from '../../theme';
 
@@ -40,6 +41,7 @@ export function CreatePostScreen({ navigation, route }: any) {
   const [tone, setTone] = useState('friendly');
   const [platform, setPlatform] = useState('vk');
   const [text, setText] = useState('');
+  const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [scheduling, setScheduling] = useState(false);
@@ -257,6 +259,11 @@ export function CreatePostScreen({ navigation, route }: any) {
         </View>
 
         <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Изображения</Text>
+          <ImageAttachment images={images} onChange={setImages} />
+        </View>
+
+        <View style={styles.section}>
           <DateTimePicker
             label="Дата и время публикации"
             value={scheduledDate}
@@ -288,6 +295,7 @@ export function CreatePostScreen({ navigation, route }: any) {
         text={text}
         platform={platform}
         topic={topic}
+        images={images}
         scheduledDate={previewAction === 'schedule' ? scheduledDate : undefined}
         confirmLabel={previewAction === 'save' ? 'Сохранить черновик' : 'Запланировать'}
         loading={loading || scheduling}

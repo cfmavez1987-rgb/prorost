@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { colors, fontSize, radius, spacing } from '../theme';
 
 interface PostPreviewProps {
@@ -9,6 +9,7 @@ interface PostPreviewProps {
   text: string;
   platform: string;
   topic: string;
+  images?: string[];
   scheduledDate?: Date;
   confirmLabel?: string;
   loading?: boolean;
@@ -27,6 +28,7 @@ export function PostPreview({
   text,
   platform,
   topic,
+  images = [],
   scheduledDate,
   confirmLabel = 'Опубликовать',
   loading = false,
@@ -70,6 +72,23 @@ export function PostPreview({
 
               {/* Текст */}
               <Text style={styles.postText}>{text}</Text>
+
+              {/* Изображения */}
+              {images.length > 0 && (
+                <View style={styles.imageGrid}>
+                  {images.map((uri, index) => (
+                    <Image
+                      key={index}
+                      source={{ uri }}
+                      style={[
+                        styles.previewImage,
+                        images.length === 1 && styles.previewImageFull,
+                        images.length === 2 && styles.previewImageHalf,
+                      ]}
+                    />
+                  ))}
+                </View>
+              )}
 
               {/* Тема */}
               <View style={styles.topicBadge}>
@@ -237,6 +256,24 @@ const styles = StyleSheet.create({
     fontSize: fontSize.xs,
     color: colors.coral,
     fontWeight: '500',
+  },
+  imageGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.xs,
+    marginBottom: spacing.md,
+  },
+  previewImage: {
+    borderRadius: radius.sm,
+    backgroundColor: colors.ghost,
+  },
+  previewImageFull: {
+    width: '100%',
+    height: 200,
+  },
+  previewImageHalf: {
+    width: '48%',
+    height: 150,
   },
   actions: {
     flexDirection: 'row',
